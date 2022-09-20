@@ -1,12 +1,10 @@
 from flask import Flask
-from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
-api = Api(app)
 
 
 class User(db.Model):
@@ -15,6 +13,7 @@ class User(db.Model):
     last_name = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False, unique=True)
     email = db.Column(db.String, nullable=False, unique=True)
+    password = db.Column(db.String, nullable=False)
 
     def __repr__(self):
         return f"{self.first_name} {self.last_name}"
@@ -26,6 +25,7 @@ class Video(db.Model):
     title = db.Column(db.String, nullable=False)
     likes = db.Column(db.Integer, nullable=False, default=0)
     views = db.Column(db.Integer, nullable=False, default=0)
+    description = db.Column(db.String, nullable=True)
 
     def __repr__(self):
         return self.title
