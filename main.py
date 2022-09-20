@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import jwt
+from functools import wraps
 
 
 app = Flask(__name__)
@@ -10,6 +11,32 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'secret'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+
+        if "Authorization" in request.headers:
+            token = request.headers["Authorization"].split(" ")[1]
+
+        if not token:
+            return {"error": "Unauthorized"}, 401
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            user = User.query.filter_by(id=data['id'])
+            if user is None:
+                return {"error": "Unauthorized"}, 401
+        except Exception:
+            return {"error": "Something went wrong"}, 500
+
+        #Adds the authenticated user to the request object
+        request.user = user
+        return f(*args, **kwargs)
+
+    return decorated
 
 
 
