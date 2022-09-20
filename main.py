@@ -77,5 +77,35 @@ def register_view():
     }}
     return jsonify(response), 201
 
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    
+    # Todo
+    # Implement username or email authentication
+    # email = request.json.get('email')
+
+    if username is None or password is None:
+        return {"error": "Enter username and password"}, 400
+    
+    user = User.query.filter_by(username=username).first()
+
+    if user is None:
+        return jsonify({"error": "Username or password incorrect"}), 401
+    
+    if not user.check_password(password):
+        return jsonify({"error": "Username orjjj password incorrect"}), 401
+
+    token = user.generate_token()
+    response = {"token": token, "user":{
+        "id": user.id,
+        "username":user.username,
+    }}
+
+    return jsonify(response), 200
+
+
 if __name__ == '__main__':
     app.run(debug=True)
